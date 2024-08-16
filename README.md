@@ -5,38 +5,42 @@ cylinder.
 
 Each valve is connected to three other valves as shown in the following image.
 
-![Valve Connections](/resources/gk-valves.png)
+![Valve Connections](https://raw.githubusercontent.com/luengoi/gkvalves/master/resources/gk-valves.png)
 
 We can view the valves as an *Undirected Graph* and the solution is to find a [Hamiltonian Path](https://en.wikipedia.org/wiki/Hamiltonian_path)
 (i.e: the path that visits each vertex exactly once) starting from the green-lit valve and finishing at the valve
 that contains the cylinder.
 
+## Installation
+This package can be installed with `pip`.
+
+```
+pip install --upgrade gkvalves
+```
+
 ## Usage
-
-Clone the repository and run the module. You must specify the location of the green valve and the location of the
-valve containing the cylinder. These are the available locations:
+Use the `list` subcommand to list all the available locations.
 
 ```
-0. Armory
-1. Dept. Store
-2. Dragon Command
-3. Supply Depot
-4. Infirmary
-5. Tank Factory
+(0) Armory
+(1) Department Store
+(2) Dragon Command
+(3) Supply Depot
+(4) Infirmary
+(5) Tank Factory
 ```
 
-The script will find a valid path that connects all valves and will tell you the position of each valve.
+Use the `solve` subcommand to find a configuration that communicates all the valves. You must supply the location
+id (number between 0-5) of the green-lit valve and the valve that contains the cylinder.
 
-```bash
-# cd into the cloned repository directory
-cd gk-valves
-python -m gkvalves 0 1  # find path for Armory (green) -> Dept. Store (cylinder)
+```
+# Find configuration for Armory (green) -> Department Store (cylinder)
+$ gkvalves solve 0 1
 
 Armory: 1
-Supply Depot: 3
-Tank Factory: 1
-Infirmary: 3
+Department Store: This is the ending valve.
 Dragon Command: 2
+Supply Depot: 3
+Infirmary: 3
+Tank Factory: 1
 ```
-
-**TODO**: I will try to add an integration to a package manager for an easier installation.

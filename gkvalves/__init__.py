@@ -1,50 +1,47 @@
-from typing import List, NamedTuple, Optional, Set, Tuple
+import os
+import subprocess
 
-__all__ = ['Valve', 'VALVES', 'solve']
-
-class Valve(NamedTuple):
-    id: int
-    name: str
-    connections: List[int]
-
-    def __str__(self) -> str:
-        return self.name
+from .valves import Location
+from .valves import Valve
+from .valves import Valves
 
 
-VALVES = [
-    Valve(0, 'Armory', [3, 5, 1]),
-    Valve(1, 'Dept. Store', [0, 4, 2]),
-    Valve(2, 'Dragon Command', [3, 1, 4]),
-    Valve(3, 'Supply Depot', [2, 0, 5]),
-    Valve(4, 'Infirmary', [1, 5, 2]),
-    Valve(5, 'Tank Factory', [4, 3, 0])
-]
+_VERSION = "1.0.2"
+_GKVALVES_PKG_DIR = os.path.dirname(__file__)
 
-def solve(start: Valve, end: Valve) -> Optional[List[Tuple[Valve, int]]]:
-    '''
-    For this particular case, a Hamiltonian Path is guaranteed to exist. Since
-    we know the start and end vertices, we can use a simple DFS algorithm and
-    brute-force all the possible combinations until we find a good one.
 
-    Finding Hamiltonian Paths is an NP-complete problem. Since our problem space
-    is considerable small (only 6 valves), the brute-force solution finds a valid
-    solution fairly quickly.
+def _version() -> str:
+    version = _VERSION
+    if not os.path.isdir(os.path.join(os.path.dirname(_GKVALVES_PKG_DIR), ".git")):
+        # Not in git directory
+        return version
 
-    There is improvement potential using Dynamic Programming. But, for this
-    particular case, the added complexity is not worth the speed improvement.
-    '''
-    visited: Set[int] = set([start.id])
+    try:
+        git_describe = subprocess.Popen(
+            ["git", "describe", "--tags", "--long"],
+            cwd=_GKVALVES_PKG_DIR,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
+        out, err = git_describe.communicate()
+        if git_describe.returncode == 0:
+            _, tag_dist_str, commit = out.decode().strip().rsplit("-", 2)
+            commit = commit.lstrip("g")[:7]
+            tag_dist = int(tag_dist_str)
+        else:
+            raise subprocess.CalledProcessError(git_describe.returncode, err)
+    except Exception:
+        pass
+    else:
+        if tag_dist > 0:
+            version += f" (+{tag_dist}, commit {commit})"
 
-    def dfs(valve: Valve, count: int) -> Optional[List[Tuple[Valve, int]]]:
-        if valve == end:
-            return [(valve, -1)] if count == len(VALVES) else None
+    return version
 
-        for i, connection in ((i, c) for (i, c) in enumerate(valve.connections) if c not in visited):
-            visited.add(connection)
-            if path := dfs(VALVES[connection], count + 1):
-                return [(valve, i)] + path
-            visited.remove(connection)
 
-        return []
+VERSION = __version__ = _version()
+__all__ = ["Location", "Valve", "Valves", "VERSION"]
 
-    return dfs(start, 1)
+
+if __name__ == "__main__":
+    print(VERSION)
